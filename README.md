@@ -1,1 +1,1 @@
-# Metodo Simples primal y dual
+# Metodo Simplex primal y dual
