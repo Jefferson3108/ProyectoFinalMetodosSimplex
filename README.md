@@ -1,1 +1,1 @@
-# ProyectoFinalMetodosSimplex
+# Metodo Simples primal y dual
