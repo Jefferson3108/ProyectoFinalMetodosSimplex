@@ -116,6 +116,15 @@ class Restriccion:
         if isinstance(self.signo, str):
             self.signo = Signo.desde_texto(self.signo)
 
+    def se_cumple(self, valores: list[Fraction]) -> bool:
+        """True si los valores de las variables satisfacen la restricción."""
+        lado_izq = sum(a * x for a, x in zip(self.coeficientes, valores))
+        if self.signo is Signo.LE:
+            return lado_izq <= self.rhs
+        if self.signo is Signo.GE:
+            return lado_izq >= self.rhs
+        return lado_izq == self.rhs
+
     def __str__(self) -> str:
         return (f"{self.nombre}: "
                 f"{_formatear_lineal(self.coeficientes)} "
@@ -167,13 +176,23 @@ class Problema:
     @property
     def es_forma_canonica(self) -> bool:
         """
-        True si es el caso simplex 'básico': maximizar, todas las
-        restricciones '<=' y todos los RHS >= 0. En ese caso no hacen
-        falta variables artificiales (Gran M / dos fases).
+        True si TODAS las restricciones son aptas para el simplex primal
+        (todas '<=' con RHS >= 0). Sirve para maximizar y para minimizar.
         """
-        return (self.es_maximizacion
-                and all(r.signo is Signo.LE and r.rhs >= 0
-                        for r in self.restricciones))
+        return all(_es_apta_primal(r) for r in self.restricciones)
+
+    def separar_restricciones(self) -> tuple[list[Restriccion],
+                                             list[Restriccion]]:
+        """
+        Divide las restricciones en (aptas, pendientes):
+          - aptas:      '<=' con RHS >= 0  -> las resuelve el simplex primal
+          - pendientes: '>=', '=' o RHS negativo -> quedan para verificarse
+                        después (y para el simplex dual si se violan)
+        """
+        aptas = [r for r in self.restricciones if _es_apta_primal(r)]
+        pendientes = [r for r in self.restricciones
+                      if not _es_apta_primal(r)]
+        return aptas, pendientes
 
     # -- Validación ---------------------------------------------------------
     def validar(self) -> None:
@@ -240,8 +259,14 @@ class Problema:
 
 
 # ---------------------------------------------------------------------------
-# Auxiliar de formato
+# Auxiliares
 # ---------------------------------------------------------------------------
+def _es_apta_primal(restriccion: Restriccion) -> bool:
+    """Una restricción es apta para el simplex primal si es '<=' y RHS >= 0."""
+    return restriccion.signo is Signo.LE and restriccion.rhs >= 0
+
+
+
 def _formatear_lineal(coefs: list[Fraction],
                       nombres: list[str] | None = None) -> str:
     """Convierte [3, -2] en '3·x1 - 2·x2' (omite coeficientes cero)."""
