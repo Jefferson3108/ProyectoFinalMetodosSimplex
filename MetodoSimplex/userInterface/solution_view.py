@@ -14,10 +14,10 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
 
-from Utils.formatters import formatear_numero
-from core.simplex import EstadoSimplex
-from core.solution import Solucion
-from core.standarizer import parsear_a_fraction  # 👈 Import para conversión a Fraction
+from MetodoSimplex.Utils.formatters import formatear_numero
+from MetodoSimplex.core.simplex import EstadoSimplex
+from MetodoSimplex.core.solution import Solucion
+from MetodoSimplex.core.standarizer import parsear_a_fraction  # 👈 Import para conversión a Fraction
 
 from .widgets import MarcoDesplazable, fuente_negrita
 

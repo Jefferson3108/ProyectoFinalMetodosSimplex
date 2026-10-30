@@ -1,5 +1,5 @@
 """Punto de entrada:  python main.py"""
-from userInterface.app import App # o la clase principal de la interfaz
+from MetodoSimplex.userInterface.app import App
 
 if __name__ == "__main__":
     app = App()

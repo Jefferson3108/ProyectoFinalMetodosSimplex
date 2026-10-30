@@ -16,10 +16,10 @@ import tkinter as tk
 from tkinter import font as tkfont
 from tkinter import ttk
 
-from Utils.formatters import formatear_numero
+from MetodoSimplex.Utils.formatters import formatear_numero
 
-from core.simplex import EstadoSimplex, Iteracion, ResultadoSimplex
-from core.standarizer import ProblemaEstandar
+from MetodoSimplex.core.simplex import EstadoSimplex, Iteracion, ResultadoSimplex
+from MetodoSimplex.core.standarizer import ProblemaEstandar
 
 from .widgets import MarcoDesplazable, fuente_negrita
 

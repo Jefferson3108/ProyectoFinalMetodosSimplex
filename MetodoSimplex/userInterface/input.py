@@ -17,7 +17,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
 
-from core.models import Problema, Restriccion, Variable
+from MetodoSimplex.core.models import Problema, Restriccion, Variable
 
 from .widgets import MarcoDesplazable, fuente_negrita
 

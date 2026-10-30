@@ -11,7 +11,7 @@ Convierte la tabla final del simplex en una solución legible:
 from __future__ import annotations
 from dataclasses import dataclass, field
 from fractions import Fraction
-from Utils.formatters import formatear_numero
+from MetodoSimplex.Utils.formatters import formatear_numero
 from .models import Restriccion
 from .simplex import EstadoSimplex, ResultadoSimplex
 from .standarizer import ProblemaEstandar, parsear_a_fraction

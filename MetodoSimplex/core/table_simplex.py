@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 
 
-from Utils.formatters import formatear_numero
+from MetodoSimplex.Utils.formatters import formatear_numero
 
 from .standarizer import ProblemaEstandar
 

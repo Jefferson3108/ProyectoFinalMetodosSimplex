@@ -14,10 +14,10 @@ import tkinter as tk
 import traceback
 from tkinter import messagebox, ttk
 
-from core import simplex
-from core.models import ErrorModelo
-from core.solution import construir_solucion
-from core.standarizer import estandarizar
+from MetodoSimplex.core import simplex
+from MetodoSimplex.core.models import ErrorModelo
+from MetodoSimplex.core.solution import construir_solucion
+from MetodoSimplex.core.standarizer import estandarizar
 
 from .input import PanelEntrada
 from .solution_view import VistaSolucion
