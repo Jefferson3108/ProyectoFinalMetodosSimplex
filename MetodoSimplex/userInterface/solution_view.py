@@ -17,7 +17,7 @@ from tkinter import ttk
 from MetodoSimplex.Utils.formatters import formatear_numero
 from MetodoSimplex.core.simplex import EstadoSimplex
 from MetodoSimplex.core.solution import Solucion
-from MetodoSimplex.core.standarizer import parsear_a_fraction  # 👈 Import para conversión a Fraction
+from MetodoSimplex.core.standarizer import parsear_a_fraction  #  Import para conversión a Fraction
 
 from .widgets import MarcoDesplazable, fuente_negrita
 
