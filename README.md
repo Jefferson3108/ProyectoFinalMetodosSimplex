@@ -1,4 +1,4 @@
-# Proyecto Metodo simplex primjal y dual
+# Proyecto Metodo simplex primal y dual
 ## 1. Descripción del proyecto ##
 Este proyecto consiste en desarrollar un programa que resuelve problemas de programación lineal (PL) mediante los métodos simplex primal y simplex dual. A partir del modelo matemático del problema, con su función objetivo y sus restricciones, el programa genera una tabla por cada iteración del método hasta alcanzar la solución óptima. Luego presenta al usuario el valor óptimo de la función objetivo y el de cada variable de decisión, y verifica que todas las restricciones se cumplan. Además, el software identifica los casos especiales que pueden presentarse en el modelo, como los problemas infactibles, los no acotados y aquellos con soluciones alternativas.
 
