@@ -15,9 +15,9 @@ from tkinter import ttk
 from MetodoSimplex.Utils.formatters import formatear_numero
 from MetodoSimplex.core.sensibility import ResultadoSensibilidad
 
-from .widgets import MarcoDesplazable, fuente_negrita
+from .widgets import PALETA, MarcoDesplazable, fuente_negrita
 
-COLOR_AVISO = "#e65100"
+COLOR_AVISO = PALETA["aviso"]
 
 
 class VistaSensibilidad(ttk.Frame):
@@ -44,7 +44,7 @@ class VistaSensibilidad(ttk.Frame):
         self._vaciar()
         ttk.Label(
             self._marco.interior,
-            foreground="#666666",
+            foreground=PALETA["texto_secundario"],
             text="Todavía no hay resultados. Define el problema y pulsa «Resolver».",
         ).pack(pady=30)
         self._btn_copiar.configure(state="disabled")
@@ -79,7 +79,7 @@ class VistaSensibilidad(ttk.Frame):
             cont,
             wraplength=950,
             justify="left",
-            foreground="#444444",
+            foreground=PALETA["texto_secundario"],
             text=(
                 "Calculado desde la tabla óptima del simplex. Un límite «-∞» o «+∞» "
                 "significa que no hay tope en ese sentido."
@@ -179,8 +179,9 @@ class VistaSensibilidad(ttk.Frame):
                 stretch=(k == 0),
             )
 
-        tabla.tag_configure("agotado", background="#fde3c8")
-        tabla.tag_configure("cero", foreground="#888888")
+        tabla.tag_configure("agotado", background="#493527",
+                    foreground=PALETA["texto"])
+        tabla.tag_configure("cero", foreground="#7E8A98")
         tabla.tag_configure("activa")
         tabla.tag_configure("libre")
 

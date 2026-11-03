@@ -14,7 +14,7 @@ import tkinter as tk
 import traceback
 from tkinter import messagebox, ttk
 
-from MetodoSimplex.core import simplex
+from MetodoSimplex.core import simplex, simplex_dual
 from MetodoSimplex.core.models import ErrorModelo
 from MetodoSimplex.core.sensibility import analizar
 from MetodoSimplex.core.solution import construir_solucion
@@ -24,30 +24,43 @@ from .input import PanelEntrada
 from .sensibility_view import VistaSensibilidad
 from .solution_view import VistaSolucion
 from .table_view import VistaTablas
+from .widgets import configurar_estilos
 
 
 class App(tk.Tk):
 
-    TITULO = "Simplex primal — DM&E S.A.S."
+    TITULO = "Método Simplex — DM&E S.A.S."
 
     def __init__(self):
         super().__init__()
         self.title(self.TITULO)
         self.geometry("1200x720")
         self.minsize(900, 560)
+        self.state("zoomed")
+        configurar_estilos(self)
 
+        ttk.Frame(self, style="Accent.TFrame", height=3).pack(fill="x")
+        encabezado = ttk.Frame(
+            self, style="Header.TFrame", padding=(28, 14, 28, 14))
+        encabezado.pack(fill="x")
+        ttk.Label(encabezado, text="SIMPLEX  /  DM&E S.A.S.",
+                  style="Header.Kicker.TLabel").pack(anchor="w")
+       
         self._notebook = ttk.Notebook(self)
-        self._notebook.pack(fill="both", expand=True, padx=6, pady=6)
+        self._notebook.pack(fill="both", expand=True, padx=10, pady=(0, 16))
 
         self.entrada = PanelEntrada(self._notebook, on_resolver=self.resolver)
         self.tablas = VistaTablas(self._notebook)
+        self.tablas_dual = VistaTablas(
+            self._notebook, metodo="simplex dual")
         self.solucion = VistaSolucion(self._notebook)
         self.sensibilidad = VistaSensibilidad(self._notebook)
 
-        self._notebook.add(self.entrada, text="1. Problema")
-        self._notebook.add(self.tablas, text="2. Tablas del simplex")
-        self._notebook.add(self.solucion, text="3. Solución")
-        self._notebook.add(self.sensibilidad, text="4. Sensibilidad")
+        self._notebook.add(self.entrada, text="Problema")
+        self._notebook.add(self.tablas, text="Tablas del simplex")
+        self._notebook.add(self.tablas_dual, text="Tablas duales")
+        self._notebook.add(self.solucion, text="Solución")
+        self._notebook.add(self.sensibilidad, text="Sensibilidad")
         self._habilitar_resultados(False)
 
         # Atajo: Ctrl+Enter resuelve desde cualquier pestaña
@@ -60,7 +73,12 @@ class App(tk.Tk):
             problema = self.entrada.construir_problema()
             est = estandarizar(problema)
             res = simplex.resolver(est)
-            sol = construir_solucion(est, res)
+            res_dual = simplex_dual.resolver(est, res)
+            resultado_final = (
+                res_dual if res_dual is not res and res_dual.n_iteraciones
+                else res
+            )
+            sol = construir_solucion(est, resultado_final)
         except ErrorModelo as error:
             self._habilitar_resultados(False)
             messagebox.showerror("Problema no válido", str(error), parent=self)
@@ -78,10 +96,16 @@ class App(tk.Tk):
         sens, motivo = self._calcular_sensibilidad(est, res)
 
         self.tablas.mostrar(est, res)
-        self.solucion.mostrar(sol)
+        self.tablas_dual.mostrar(est, res_dual)
+        metodo = ("simplex dual" if resultado_final is res_dual
+              else "simplex primal")
+        self.solucion.mostrar(sol, metodo=metodo)
         self.sensibilidad.mostrar(sens, motivo)
         self._habilitar_resultados(True)
-        self._notebook.select(self.solucion)
+        if res_dual is not res and res_dual.n_iteraciones:
+            self._notebook.select(self.tablas_dual)
+        else:
+            self._notebook.select(self.solucion)
 
     def _calcular_sensibilidad(self, est, res):
         """Devuelve (resultado, motivo). Si no se puede calcular: (None, motivo)."""
@@ -98,10 +122,12 @@ class App(tk.Tk):
     def _habilitar_resultados(self, activo: bool) -> None:
         estado = "normal" if activo else "disabled"
         self._notebook.tab(self.tablas, state=estado)
+        self._notebook.tab(self.tablas_dual, state=estado)
         self._notebook.tab(self.solucion, state=estado)
         self._notebook.tab(self.sensibilidad, state=estado)
         if not activo:
             self.tablas.limpiar()
+            self.tablas_dual.limpiar()
             self.solucion.limpiar()
             self.sensibilidad.limpiar()
             self._notebook.select(self.entrada)

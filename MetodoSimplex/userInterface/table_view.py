@@ -21,27 +21,31 @@ from MetodoSimplex.Utils.formatters import formatear_numero
 from MetodoSimplex.core.simplex import EstadoSimplex, Iteracion, ResultadoSimplex
 from MetodoSimplex.core.standarizer import ProblemaEstandar
 
-from .widgets import MarcoDesplazable, fuente_negrita
+from .widgets import PALETA, MarcoDesplazable, fuente_negrita
 
 COLOR = {
-    "encabezado": "#d9e2ef",
-    "z": "#eef2f7",
-    "normal": "#ffffff",
-    "columna": "#d8f0d8",
-    "fila": "#fde3c8",
-    "pivote": "#ffd54a",
-    "razon_min": "#fff2b3",
+    "encabezado": PALETA["superficie_sutil"],
+    "z": "#2D2C36",
+    "normal": PALETA["superficie"],
+    "columna": "#18394F",
+    "fila": "#493527",
+    "pivote": "#6E5728",
+    "razon_min": "#4B4026",
 }
 
 
 class VistaTablas(ttk.Frame):
 
-    def __init__(self, master, decimales: int = 4):
+    def __init__(self, master, decimales: int = 4,
+                 metodo: str = "simplex primal"):
         super().__init__(master, padding=10)
         self._decimales = decimales
+        self._metodo = metodo
+        self._dual = metodo == "simplex dual"
         self._est: ProblemaEstandar | None = None
         self._res: ResultadoSimplex | None = None
         self._indice = 0
+        self._ancho_dibujado = 0
 
         self._crear_navegacion()
         self._crear_panel_estandar()
@@ -51,8 +55,10 @@ class VistaTablas(ttk.Frame):
                                    wraplength=1000, justify="left")
         self._lbl_info.pack(anchor="w", pady=(0, 6))
 
-        self._marco = MarcoDesplazable(self)
+        self._marco = MarcoDesplazable(self, desplazar_x=False)
         self._marco.pack(fill="both", expand=True)
+        self._marco.canvas.bind("<Configure>", self._ajustar_ancho,
+                    add="+")
         self._crear_leyenda()
 
     # ------------------------------------------------------------------
@@ -108,9 +114,12 @@ class VistaTablas(ttk.Frame):
                              ("fila", "Fila saliente"),
                              ("pivote", "Elemento pivote"),
                              ("razon_min", "Razón mínima")):
-            tk.Label(leyenda, text=texto, bg=COLOR[clave], fg="black",
-                     relief="solid", bd=1, padx=6).pack(side="left", padx=3)
-        ttk.Label(leyenda, foreground="#666666",
+            tk.Label(leyenda, text=texto, bg=COLOR[clave],
+                     fg=PALETA["texto"],
+                     relief="solid", bd=1, highlightthickness=0,
+                     highlightbackground=PALETA["borde"],
+                     padx=6).pack(side="left", padx=3)
+        ttk.Label(leyenda, foreground=PALETA["texto_secundario"],
                   text="   Fila Z = z_j − c_j (la tabla es óptima cuando "
                        "todos son ≥ 0)").pack(side="left", padx=8)
 
@@ -156,6 +165,7 @@ class VistaTablas(ttk.Frame):
         if ultima:
             etiqueta = {EstadoSimplex.OPTIMA: "óptima",
                         EstadoSimplex.NO_ACOTADA: "no acotada",
+                        EstadoSimplex.INFACTIBLE: "infactible",
                         }.get(self._res.estado, "última")
             return f"Tabla {i} ({etiqueta})"
         return f"Tabla {i}"
@@ -171,6 +181,17 @@ class VistaTablas(ttk.Frame):
 
     def _texto_decision(self, it: Iteracion) -> str:
         f = lambda v: formatear_numero(v, self._decimales)
+        if self._dual:
+            if self._res.estado is EstadoSimplex.INFACTIBLE:
+                return "Tabla infactible: no existe una columna dual válida."
+            if it.col_entrante is None:
+                return ("Tabla óptima: la solución satisface todas las "
+                        "restricciones pendientes.")
+            razon = it.razones[it.col_entrante]
+            return (f"Sale {it.variable_saliente} (lado derecho negativo); "
+                    f"entra {it.variable_entrante} (razón dual mínima = "
+                    f"{f(razon)}). Elemento pivote = "
+                    f"{f(it.elemento_pivote)}.")
         if it.col_entrante is None:
             return ("Tabla óptima: todos los valores de la fila Z son ≥ 0, "
                     "ninguna variable puede mejorar Z.")
@@ -192,8 +213,14 @@ class VistaTablas(ttk.Frame):
         m = it.tabla.n_filas
         hay_pivote_col = it.col_entrante is not None
 
-        # Columna extra con las razones RHS / elemento
-        if hay_pivote_col:
+        if self._dual and it.razones:
+            razones_duales = [
+                "—" if razon is None
+                else formatear_numero(razon, self._decimales)
+                for razon in it.razones
+            ]
+            filas.append(["Razón dual"] + razones_duales + [""])
+        elif hay_pivote_col:
             filas[0].append("Razón")
             for i in range(m):
                 r = it.razones[i]
@@ -204,12 +231,13 @@ class VistaTablas(ttk.Frame):
 
         # Ancho uniforme por columna
         n_cols = len(filas[0])
-        anchos = [max(len(fila[c]) for fila in filas) + 2
-                  for c in range(n_cols)]
-        col_razon = n_cols - 1 if hay_pivote_col else None
+        ancho_disponible = max(self._marco.canvas.winfo_width(), 1)
+        ancho_celda = max(36, ancho_disponible // n_cols)
+        col_razon = n_cols - 1 if hay_pivote_col and not self._dual else None
         col_pivote = it.col_entrante + 1 if hay_pivote_col else None
         fila_pivote = it.fila_saliente + 1 if it.fila_saliente is not None \
             else None
+        fila_razon_dual = len(filas) - 1 if self._dual and it.razones else None
 
         negrita = fuente_negrita()
         normal = tkfont.nametofont("TkDefaultFont")
@@ -217,10 +245,13 @@ class VistaTablas(ttk.Frame):
         g = self._marco.interior
         for w in g.winfo_children():
             w.destroy()
+        for columna in range(n_cols):
+            g.columnconfigure(columna, weight=1, uniform="tabla")
 
         for r, fila in enumerate(filas):
             es_encabezado = r == 0
-            es_z = r == len(filas) - 1
+            es_z = r == len(filas) - 1 - int(fila_razon_dual is not None)
+            es_razon_dual = r == fila_razon_dual
             for c, texto in enumerate(fila):
                 bg = COLOR["normal"]
                 usar_negrita = False
@@ -230,6 +261,11 @@ class VistaTablas(ttk.Frame):
                     bg, usar_negrita = COLOR["z"], True
                 elif c == 0:
                     usar_negrita = True
+
+                if es_razon_dual:
+                    bg, usar_negrita = COLOR["z"], True
+                    if c == col_pivote:
+                        bg = COLOR["razon_min"]
 
                 if not es_encabezado and not es_z:
                     if c == col_pivote:
@@ -243,8 +279,19 @@ class VistaTablas(ttk.Frame):
                 elif es_z and c == col_pivote:
                     bg = COLOR["columna"]
 
-                tk.Label(g, text=texto, bg=bg, fg="black",
+                tk.Label(g, text=texto, bg=bg, fg=PALETA["texto"],
                          font=negrita if usar_negrita else normal,
-                         width=anchos[c], anchor="w" if c == 0 else "e",
-                         relief="solid", bd=1, padx=2, pady=3
+                         wraplength=max(ancho_celda - 8, 24),
+                         anchor="w" if c == 0 else "e",
+                         justify="left" if c == 0 else "right",
+                         relief="solid", bd=1,
+                         highlightthickness=0,
+                         highlightbackground=PALETA["borde"],
+                         padx=2, pady=2
                          ).grid(row=r, column=c, sticky="nsew")
+
+    def _ajustar_ancho(self, evento) -> None:
+        if self._res is None or abs(evento.width - self._ancho_dibujado) < 4:
+            return
+        self._ancho_dibujado = evento.width
+        self._dibujar()

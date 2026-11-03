@@ -15,6 +15,150 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import font as tkfont
 
+PALETA = {
+    "fondo": "#1C1B22",
+    "superficie": "#25242C",
+    "superficie_sutil": "#34333D",
+    "texto": "#F9F9FB",
+    "texto_secundario": "#C4C3CA",
+    "borde": "#000000",
+    "primario": "#45A1FF",
+    "primario_hover": "#75B8FF",
+    "positivo": "#287A55",
+    "aviso": "#8A5B12",
+    "error": "#963B46",
+}
+
+
+def configurar_estilos(root: tk.Misc) -> None:
+    """Aplica el tema compartido de la interfaz a los widgets ttk."""
+    estilo = ttk.Style(root)
+    if "clam" in estilo.theme_names():
+        estilo.theme_use("clam")
+
+    for nombre in ("TkDefaultFont", "TkTextFont", "TkMenuFont",
+                   "TkHeadingFont"):
+        tkfont.nametofont(nombre).configure(family="Segoe UI", size=10)
+
+    root.configure(background=PALETA["fondo"])
+    estilo.configure("TFrame", background=PALETA["fondo"])
+    estilo.configure("Header.TFrame", background=PALETA["superficie"])
+    estilo.configure("Accent.TFrame", background=PALETA["primario"])
+    estilo.configure("TLabel", background=PALETA["fondo"],
+                     foreground=PALETA["texto"], font=("Segoe UI", 10))
+    estilo.configure("Header.Kicker.TLabel", background=PALETA["superficie"],
+                     foreground=PALETA["primario"],
+                     font=("Segoe UI", 9, "bold"))
+    estilo.configure("Header.Title.TLabel", background=PALETA["superficie"],
+                     foreground=PALETA["texto"],
+                     font=("Segoe UI", 23, "bold"))
+    estilo.configure("Header.Subtitle.TLabel",
+                     background=PALETA["superficie"],
+                     foreground=PALETA["texto_secundario"],
+                     font=("Segoe UI", 10))
+    estilo.configure("TLabelframe", background=PALETA["superficie"],
+                     borderwidth=1, bordercolor=PALETA["borde"],
+                     lightcolor=PALETA["borde"],
+                     darkcolor=PALETA["borde"],
+                     relief="solid")
+    estilo.configure("TLabelframe.Label", background=PALETA["superficie"],
+                     foreground=PALETA["texto"],
+                     font=("Segoe UI", 10, "bold"))
+
+    estilo.configure("TNotebook", background=PALETA["fondo"],
+                     borderwidth=1, bordercolor=PALETA["borde"],
+                     lightcolor=PALETA["borde"], darkcolor=PALETA["borde"],
+                     tabmargins=(0, 0, 0, 0))
+    estilo.configure("TNotebook.Tab", background=PALETA["superficie_sutil"],
+                     foreground=PALETA["texto_secundario"],
+                     bordercolor=PALETA["borde"],
+                     lightcolor=PALETA["borde"],
+                     darkcolor=PALETA["borde"],
+                     padding=(12, 8), borderwidth=1, relief="solid",
+                     font=("Segoe UI", 10, "bold"))
+    estilo.map("TNotebook.Tab",
+               padding=[("selected", (12, 8)), ("!selected", (12, 8))],
+               background=[("selected", PALETA["superficie"]),
+                           ("active", "#303B48")],
+               foreground=[("selected", PALETA["primario"]),
+                           ("active", PALETA["texto"])])
+
+    estilo.configure("TButton", background=PALETA["superficie"],
+                     foreground=PALETA["texto"],
+                     bordercolor=PALETA["borde"], borderwidth=1,
+                     lightcolor=PALETA["borde"],
+                     darkcolor=PALETA["borde"],
+                     relief="solid", padding=(12, 8),
+                     font=("Segoe UI", 10))
+    estilo.map("TButton", background=[("pressed", "#303B48"),
+                                       ("active", "#293440")])
+    estilo.configure("TMenubutton", background=PALETA["superficie"],
+                     foreground=PALETA["texto"],
+                     bordercolor=PALETA["borde"], borderwidth=1,
+                     lightcolor=PALETA["borde"],
+                     darkcolor=PALETA["borde"],
+                     relief="solid", padding=(12, 8),
+                     font=("Segoe UI", 10))
+    estilo.map("TMenubutton", background=[("pressed", "#303B48"),
+                                          ("active", "#293440")])
+    estilo.configure("Primary.TButton", background=PALETA["primario"],
+                     foreground="#101116",
+                     bordercolor=PALETA["borde"], borderwidth=1,
+                     lightcolor=PALETA["borde"],
+                     darkcolor=PALETA["borde"],
+                     relief="solid",
+                     padding=(16, 9), font=("Segoe UI", 10, "bold"))
+    estilo.map("Primary.TButton",
+               background=[("disabled", "#394654"),
+                           ("pressed", PALETA["primario_hover"]),
+                           ("active", PALETA["primario_hover"])],
+               foreground=[("disabled", "#A1ADBA"),
+                           ("!disabled", "#101116")])
+
+    estilo.configure("TEntry", fieldbackground=PALETA["superficie"],
+                     foreground=PALETA["texto"], insertcolor=PALETA["texto"],
+                     bordercolor=PALETA["borde"], borderwidth=1,
+                     lightcolor=PALETA["borde"],
+                     darkcolor=PALETA["borde"],
+                     relief="solid", padding=7)
+    estilo.map("TEntry", bordercolor=[("focus", PALETA["borde"])])
+    estilo.configure("TCombobox", fieldbackground=PALETA["superficie"],
+                     foreground=PALETA["texto"],
+                     bordercolor=PALETA["borde"], borderwidth=1,
+                     lightcolor=PALETA["borde"],
+                     darkcolor=PALETA["borde"],
+                     relief="solid", padding=6)
+    estilo.map("TCombobox", fieldbackground=[("readonly", PALETA["superficie"])],
+               selectbackground=[("readonly", PALETA["superficie"])],
+               selectforeground=[("readonly", PALETA["texto"])])
+
+    estilo.configure("Treeview", background=PALETA["superficie"],
+                     fieldbackground=PALETA["superficie"],
+                     foreground=PALETA["texto"], rowheight=30,
+                     bordercolor=PALETA["borde"], borderwidth=1,
+                     lightcolor=PALETA["borde"],
+                     darkcolor=PALETA["borde"],
+                     relief="solid", font=("Segoe UI", 10))
+    estilo.configure("Treeview.Heading", background=PALETA["superficie_sutil"],
+                     foreground=PALETA["texto"],
+                     borderwidth=1, bordercolor=PALETA["borde"],
+                     relief="solid", lightcolor=PALETA["borde"],
+                     darkcolor=PALETA["borde"],
+                     font=("Segoe UI", 10, "bold"), padding=(8, 8))
+    estilo.map("Treeview", background=[("selected", "#29445A")],
+               foreground=[("selected", PALETA["texto"])])
+    estilo.configure("TSeparator", background=PALETA["borde"])
+
+    estilo.configure("Vertical.TScrollbar", background=PALETA["superficie_sutil"],
+                     troughcolor=PALETA["fondo"], bordercolor=PALETA["borde"],
+                     borderwidth=1, relief="solid",
+                     arrowcolor=PALETA["texto_secundario"])
+    estilo.configure("Horizontal.TScrollbar",
+                     background=PALETA["superficie_sutil"],
+                     troughcolor=PALETA["fondo"], bordercolor=PALETA["borde"],
+                     borderwidth=1, relief="solid",
+                     arrowcolor=PALETA["texto_secundario"])
+
 
 def fuente_negrita(tamano: int | None = None) -> tkfont.Font:
     """Copia en negrita de la fuente por defecto (requiere ventana creada)."""

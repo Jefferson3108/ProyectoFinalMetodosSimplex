@@ -19,19 +19,21 @@ from MetodoSimplex.core.simplex import EstadoSimplex
 from MetodoSimplex.core.solution import Solucion
 from MetodoSimplex.core.standarizer import parsear_a_fraction  #  Import para conversión a Fraction
 
-from .widgets import MarcoDesplazable, fuente_negrita
+from .widgets import PALETA, MarcoDesplazable, fuente_negrita
 
 BANNER = {
-    "ok": ("#2e7d32", "✔  "),
-    "dual": ("#e65100", "⚠  "),
-    "error": ("#c62828", "✖  "),
+    "ok": (PALETA["positivo"], "✔  "),
+    "dual": (PALETA["aviso"], "⚠  "),
+    "error": (PALETA["error"], "✖  "),
 }
 
 
 class VistaSolucion(ttk.Frame):
-    def __init__(self, master, decimales: int = 4):
+    def __init__(self, master, decimales: int = 4,
+                 metodo: str = "simplex primal"):
         super().__init__(master, padding=10)
         self._decimales = decimales
+        self._metodo = metodo
         self._solucion: Solucion | None = None
         self._marco = MarcoDesplazable(self, desplazar_x=False)
         self._marco.pack(fill="both", expand=True)
@@ -53,16 +55,25 @@ class VistaSolucion(ttk.Frame):
         self._vaciar()
         ttk.Label(
             self._marco.interior,
-            foreground="#666666",
+            foreground=PALETA["texto_secundario"],
             text="Todavía no hay resultados. Define el problema y pulsa «Resolver».",
         ).pack(pady=30)
         self._btn_copiar.configure(state="disabled")
 
-    def mostrar(self, sol: Solucion) -> None:
+    def mostrar(self, sol: Solucion, metodo: str | None = None) -> None:
         self._solucion = sol
+        if metodo is not None:
+            self._metodo = metodo
         self._vaciar()
         cont = self._marco.interior
         f = lambda v: formatear_numero(parsear_a_fraction(v), self._decimales)
+
+        ttk.Label(
+            cont,
+            text=f"Resultado mediante {self._metodo}",
+            foreground=PALETA["texto_secundario"],
+            font=("Segoe UI", 10, "bold"),
+        ).pack(anchor="w", pady=(0, 6))
 
         # 1. Banner
         if sol.es_final:
@@ -226,9 +237,11 @@ class VistaSolucion(ttk.Frame):
                 stretch=(k == 0),
             )
 
-        tabla.tag_configure("agotado", background="#fde3c8")
-        tabla.tag_configure("viola", background="#f8c9c9")
-        tabla.tag_configure("cero", foreground="#888888")
+        tabla.tag_configure("agotado", background="#493527",
+                    foreground=PALETA["texto"])
+        tabla.tag_configure("viola", background="#492B36",
+                    foreground=PALETA["texto"])
+        tabla.tag_configure("cero", foreground="#7E8A98")
         tabla.tag_configure("activa")
         tabla.tag_configure("libre")
 

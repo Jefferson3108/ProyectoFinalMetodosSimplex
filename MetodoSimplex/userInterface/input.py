@@ -19,7 +19,7 @@ from tkinter import ttk
 
 from MetodoSimplex.core.models import Problema, Restriccion, Variable
 
-from .widgets import MarcoDesplazable, fuente_negrita
+from .widgets import PALETA, MarcoDesplazable, fuente_negrita
 
 SIGNOS = ("<=", ">=", "=")
 
@@ -152,7 +152,17 @@ class PanelEntrada(ttk.Frame):
                    command=self.quitar_restriccion).pack(side="left", padx=2)
 
         menu_btn = ttk.Menubutton(barra, text="Cargar ejemplo ▾")
-        menu = tk.Menu(menu_btn, tearoff=False)
+        menu = tk.Menu(
+            menu_btn,
+            tearoff=False,
+            background=PALETA["superficie"],
+            foreground=PALETA["texto"],
+            activebackground=PALETA["primario"],
+            activeforeground=PALETA["fondo"],
+            borderwidth=1,
+            relief="solid",
+            font=("Segoe UI", 10),
+        )
         for nombre in EJEMPLOS:
             menu.add_command(label=nombre,
                              command=lambda n=nombre: self.cargar_ejemplo(n))
@@ -163,9 +173,10 @@ class PanelEntrada(ttk.Frame):
                    command=self.limpiar).pack(side="left", padx=2)
 
         ttk.Button(barra, text="Resolver con simplex primal  ▶",
-                   command=self._on_resolver).pack(side="right", padx=2)
+                   command=self._on_resolver,
+                   style="Primary.TButton").pack(side="right", padx=2)
 
-        ttk.Label(self, foreground="#666666",
+        ttk.Label(self, foreground=PALETA["texto_secundario"],
                   text="Se aceptan decimales con coma o punto y fracciones "
                        "(ej. 1214,98 o 3/2). Una celda vacía vale 0."
                   ).pack(anchor="w", pady=(6, 0))

@@ -33,6 +33,7 @@ from .table_simplex import Tableau
 class EstadoSimplex(Enum):
     OPTIMA = "óptima"
     NO_ACOTADA = "no acotada"
+    INFACTIBLE = "infactible"
     LIMITE_ITERACIONES = "límite de iteraciones"
 
 
